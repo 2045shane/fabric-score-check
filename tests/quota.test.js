@@ -1,0 +1,5 @@
+const {test}=require('node:test');const a=require('node:assert/strict');const q=require('../src/lib/quota');const l=require('../src/lib/license');
+function storage(){let data={};return {async get(){return structuredClone(data)},async set(v){Object.assign(data,structuredClone(v))}}}
+test('每日3次、并发不能越限',async()=>{const s=q.createQuotaStore(storage());const r=await Promise.all(Array.from({length:5},()=>s.consume()));a.equal(r.filter(x=>x.recorded).length,3);a.equal((await s.status()).remaining,0)});
+test('本地日期跨日重置',async()=>{let date=new Date(2026,10,1,23,59);const s=q.createQuotaStore(storage(),()=>date);await s.consume();date=new Date(2026,10,2,0,0);a.equal((await s.status()).remaining,3);a.equal(q.localDateKey(date),'2026-11-02')});
+test('有效license不限量，错误license不解锁',async()=>{const db=storage();const s=q.createQuotaStore(db);await db.set({[q.STORAGE_KEYS.license]:'bad'});a.equal((await s.status()).unlocked,false);await db.set({[q.STORAGE_KEYS.license]:await l.issueLicense()});for(let i=0;i<5;i++)a.equal((await s.consume()).recorded,true);a.equal((await s.status()).remaining,null)});
