@@ -1,6 +1,6 @@
 # 面料成分检查
 
-无外部依赖的 Chrome Manifest V3 插件 MVP。主动读取 Amazon、Shein、Zara 商品页的面料成分，在页面右下角显示中文成分、合成纤维占比、0–100 分与提示。界面沿用参考项目的米色纸张、朱红按钮、衬线标题风格。
+无外部依赖的 Chrome Manifest V3 插件 MVP。主动读取 Amazon 商品页的面料成分，在页面右下角显示中文成分、合成纤维占比、0–100 分与提示。界面沿用参考项目的米色纸张、朱红按钮、衬线标题风格。
 
 ## 安装
 
@@ -42,14 +42,14 @@ node scripts/gen-license.mjs
 
 ## 站点与权限
 
-Amazon 支持 www.amazon.com、co.uk、de、fr、it、es、ca、com.au、co.jp、in、com.br、com.mx 的 `/dp/ASIN` 和 `/gp/product/ASIN` 商品路由；Shein 支持 shein.com 子域的 `-p-数字.html` 路由；Zara 支持 www.zara.com 的 `-p数字.html` 路由。
+Amazon 支持 www.amazon.com、co.uk、de、fr、it、es、ca、com.au、co.jp、in、com.br、com.mx 的 `/dp/ASIN` 和 `/gp/product/ASIN` 商品路由。
 
-权限仅 `storage` 与 `activeTab`；host_permissions 仅上述三类商家的域名。为识别地区路径和站内 SPA 跳转，注入匹配这些域的页面，运行时只在识别到商品路由时显示检查面板。不读取其他网站、不发起网络请求、不上传商品文本或许可。
+权限仅 `storage` 与 `activeTab`；host_permissions 仅上述 Amazon 域名。为识别地区路径和站内 SPA 跳转，注入匹配这些域的页面，运行时只在识别到商品路由时显示检查面板。不读取其他网站、不发起网络请求、不上传商品文本或许可。
 
 ## 已知限制
 
 - **DOM 易变、选择器未真站验收**。本次仅完成离线测试，没有联网或真实 Chrome 商品页验收。
-- Amazon 使用多个候选选择器和商品详情容器文本兜底；Shein / Zara 为占位选择器 + TODO，可能无法获取实际成分。
+- Amazon 使用多个候选选择器和商品详情容器文本兜底。Shein / Zara 占位选择器已移除，扩展不再声明或匹配这两个站点。
 - 内容必须已出现在 DOM 中；不会自动展开折叠区、滚动、绕过登录、验证码或地区限制，也不能识别图片上的标签。
 - 成分表含外层、里料、填充等多个独立百分比组时可能合计超过 100%，会提示异常而不评分。复杂混排、多语言、未知纤维及营销描述可能造成漏读或误匹配，请核对原文。
 - SPA 路由变化只更新面板状态，不自动检查或计次；安装或更新扩展后需刷新已有标签页。

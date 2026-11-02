@@ -2,13 +2,9 @@
 (function(root){
 'use strict';
 const SELECTORS={
- amazon:{candidates:['#productFactsDesktopExpander .a-fixed-left-grid','#productFactsDesktopExpander .a-fixed-left-grid-col','#productDetails_techSpec_section_1 tr','#productDetails_detailBullets_sections1 tr','#detailBullets_feature_div li','#fabricType','#feature-bullets li'],fallback:['#productFactsDesktopExpander','#productOverview_feature_div','#detailBullets_feature_div','#productDescription']},
- // TODO: 用真实商品页核验以下占位选择器，包括区域、语言与动态折叠详情。
- shein:{candidates:['.product-intro__description-table-item','[data-testid="product-composition"]','.product-intro__description'],fallback:[]},
- // TODO: 用真实商品页核验以下占位选择器及 SPA 路由变化。
- zara:{candidates:['.product-detail-composition .structured-component-text-block-paragraph','[data-qa="composition"]','.product-detail-extra-detail'],fallback:[]}
+ amazon:{candidates:['#productFactsDesktopExpander .a-fixed-left-grid','#productFactsDesktopExpander .a-fixed-left-grid-col','#productDetails_techSpec_section_1 tr','#productDetails_detailBullets_sections1 tr','#detailBullets_feature_div li','#fabricType','#feature-bullets li'],fallback:['#productFactsDesktopExpander','#productOverview_feature_div','#detailBullets_feature_div','#productDescription']}
 };
-function getSite(value){try{const u=new URL(value);if(u.protocol!=='https:')return null;const h=u.hostname;if(/^www\.amazon\.(com|co\.uk|de|fr|it|es|ca|com\.au|co\.jp|in|com\.br|com\.mx)$/.test(h)&&/\/(?:dp|gp\/product)\/[a-z0-9]{10}(?:\/|$)/i.test(u.pathname))return 'amazon';if(/(^|\.)shein\.com$/.test(h)&&/-p-\d+\.html$/i.test(u.pathname))return 'shein';if(h==='www.zara.com'&&/-p\d+\.html$/i.test(u.pathname))return 'zara';return null;}catch{return null;}}
+function getSite(value){try{const u=new URL(value);if(u.protocol!=='https:')return null;const h=u.hostname;if(/^www\.amazon\.(com|co\.uk|de|fr|it|es|ca|com\.au|co\.jp|in|com\.br|com\.mx)$/.test(h)&&/\/(?:dp|gp\/product)\/[a-z0-9]{10}(?:\/|$)/i.test(u.pathname))return 'amazon';return null;}catch{return null;}}
 const label=/fabric\s*type|materials?|composition|成分|材质|面料|composición|zusammensetzung|composizione|素材/i;
 function extractComposition(doc,site){
  const spec=SELECTORS[site];if(!spec)return null;
