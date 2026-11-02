@@ -53,16 +53,25 @@ function parseComposition(value) {
  if(fibers.some(f=>f.percent>100))warnings.push('单项百分比超出范围。');
  return {text:String(value||''),fibers,total,warnings};
 }
+// Amazon 常把多颜色成分写在一行（如 "Solids: 100% Cotton; Sport Grey: 90% Cotton, 10% Polyester"），
+// 整行合计会超过 100%。此时按分号/换行拆段，取第一个能完整解析为 100% 的款式，并提示用户核对颜色。
+function pickVariant(value){
+ const whole=parseComposition(value);if(whole.total<=100.5||!whole.warnings.length)return {r:whole,variant:null};
+ const segments=String(value||'').split(/[;；\n]+/).map(x=>x.trim()).filter(Boolean);if(segments.length<2)return {r:whole,variant:null};
+ for(const seg of segments){const r=parseComposition(seg);if(r.fibers.length&&!r.warnings.length){const label=(seg.match(/^([^:：%\d]{1,40})[:：]/)||[])[1]||seg.slice(0,20);return {r:{...r,text:String(value)},variant:label.replace(/^fabric\s*type\s*/i,'').trim()||label};}}
+ return {r:whole,variant:null};
+}
 function analyzeComposition(value){
- const r=parseComposition(value);const complete=!r.warnings.length;
+ const picked=pickVariant(value);const r=picked.r;const complete=!r.warnings.length;
  const syntheticPercent=complete?Math.min(100,r.fibers.filter(f=>f.category==='synthetic').reduce((n,f)=>n+f.percent,0)):null;
  const score=complete?Math.max(0,Math.min(100,Math.round(100-syntheticPercent))):null;
  const grade=score===null?'信息不足':syntheticPercent<=20?'合成占比较低':syntheticPercent<=50?'合成占比中等':'合成占比较高';
  const tips=[...r.warnings];
+ if(picked.variant)tips.unshift('不同颜色/款式成分不同，以下按「'+picked.variant+'」计算，请核对你选的颜色。');
  if(complete)tips.push(syntheticPercent>0?'含合成纤维，洗涤时可能释放微塑料纤维；可减少不必要洗涤并使用集纤措施。':'已识别成分未见合成纤维；不代表没有环境影响。');
  if(r.fibers.some(f=>f.category==='regenerated'))tips.push('再生纤维素为单独类别；生产过程也有环境影响。');
  tips.push('评分仅按合成纤维占比启发式计算，非检测报告，不评价安全性或面料品质。');
- return {...r,syntheticPercent,score,grade,tips};
+ return {...r,variant:picked.variant,syntheticPercent,score,grade,tips};
 }
 const api={parseComposition,analyzeComposition};Object.assign(root.FabricScore ||= {},api);
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
